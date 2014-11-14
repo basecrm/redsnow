@@ -65,6 +65,11 @@ module RedSnow
     attach_function('sc_parameter_collection_handle_action', 'sc_parameter_collection_handle_action', [:pointer], :pointer)
     attach_function('sc_parameter_collection_size', 'sc_parameter_collection_size', [:pointer], :int)
 
+    attach_function('sc_attribute_collection_handle_payload', 'sc_attribute_collection_handle_payload', [:pointer], :pointer)
+    attach_function('sc_attribute_collection_handle_resource', 'sc_attribute_collection_handle_resource', [:pointer], :pointer)
+    attach_function('sc_attribute_collection_handle_action', 'sc_attribute_collection_handle_action', [:pointer], :pointer)
+    attach_function('sc_attribute_collection_size', 'sc_attribute_collection_size', [:pointer], :int)
+
     # @see https://github.com/apiaryio/snowcrash/blob/master/src/Blueprint.h#L85
     enum :parameter_use, [:undefined,
                           :optional,
@@ -169,7 +174,7 @@ module RedSnow
     attach_function('sc_sm_payload_body', 'sc_sm_payload_body', [:pointer], :pointer)
     attach_function('sc_sm_payload_schema', 'sc_sm_payload_schema', [:pointer], :pointer)
 
-    # Payload Reference Soure Map
+    # Payload Reference Source Map
     attach_function('sc_sm_reference_handle', 'sc_sm_reference_handle', [:pointer], :pointer)
     attach_function('sc_sm_reference', 'sc_sm_reference', [:pointer], :pointer)
 
@@ -177,6 +182,11 @@ module RedSnow
     attach_function('sc_sm_parameter_collection_handle_resource', 'sc_sm_parameter_collection_handle_resource', [:pointer], :pointer)
     attach_function('sc_sm_parameter_collection_handle_action', 'sc_sm_parameter_collection_handle_action', [:pointer], :pointer)
     attach_function('sc_sm_parameter_collection_size', 'sc_sm_parameter_collection_size', [:pointer], :int)
+
+    attach_function('sc_sm_attribute_collection_handle_payload', 'sc_sm_attribute_collection_handle_payload', [:pointer], :pointer)
+    attach_function('sc_sm_attribute_collection_handle_resource', 'sc_sm_attribute_collection_handle_resource', [:pointer], :pointer)
+    attach_function('sc_sm_attribute_collection_handle_action', 'sc_sm_attribute_collection_handle_action', [:pointer], :pointer)
+    attach_function('sc_sm_attribute_collection_size', 'sc_sm_attribute_collection_size', [:pointer], :int)
 
     attach_function('sc_sm_parameter_handle', 'sc_sm_parameter_handle', [:pointer, :int], :pointer)
     attach_function('sc_sm_parameter_name', 'sc_sm_parameter_name', [:pointer], :pointer)

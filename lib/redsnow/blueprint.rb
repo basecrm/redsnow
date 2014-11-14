@@ -197,6 +197,29 @@ module RedSnow
     end
   end
 
+  # Collection of body attributes Blueprint AST node
+  #   represents 'attributes section'
+  #
+  # @attr collection [Array<Parameter>] an array of body attributes
+  class Attributes < BlueprintNode
+    attr_accessor :collection
+
+    # @param sc_parameter_collection_handle [FFI::Pointer]
+    def initialize(sc_attribute_collection_handle)
+      sc_attribute_collection_size = RedSnow::Binding.sc_attribute_collection_size(sc_attribute_collection_handle)
+      @collection = []
+
+      return if sc_attribute_collection_size == 0
+
+      parameters_size = sc_attribute_collection_size - 1
+
+      (0..parameters_size).each do |index|
+        sc_parameter_handle = RedSnow::Binding.sc_parameter_handle(sc_attribute_collection_handle, index)
+        @collection << Parameter.new(sc_parameter_handle)
+      end
+    end
+  end
+
   # HTTP message payload Blueprint AST node
   #   base class for 'payload sections'
   #
@@ -210,6 +233,7 @@ module RedSnow
     attr_accessor :headers
     attr_accessor :body
     attr_accessor :parameters
+    attr_accessor :attributes
     attr_accessor :schema
     attr_accessor :reference
 
@@ -221,6 +245,7 @@ module RedSnow
       @schema = RedSnow::Binding.sc_payload_schema(sc_payload_handle_resource)
 
       @parameters = Parameters.new(RedSnow::Binding.sc_parameter_collection_handle_payload(sc_payload_handle_resource))
+      @attributes = Attributes.new(RedSnow::Binding.sc_attribute_collection_handle_payload(sc_payload_handle_resource))
 
       sc_reference_handle_payload = RedSnow::Binding.sc_reference_handle_payload(sc_payload_handle_resource)
       sc_reference_id = RedSnow::Binding.sc_reference_id(sc_reference_handle_payload)
@@ -286,6 +311,7 @@ module RedSnow
   class Action < NamedBlueprintNode
     attr_accessor :method
     attr_accessor :parameters
+    attr_accessor :attributes
     attr_accessor :examples
 
     # @param sc_action_handle [FFI::Pointer]
@@ -296,6 +322,7 @@ module RedSnow
       @method = RedSnow::Binding.sc_action_httpmethod(sc_action_handle)
 
       @parameters = Parameters.new(RedSnow::Binding.sc_parameter_collection_handle_action(sc_action_handle))
+      @attributes = Attributes.new(RedSnow::Binding.sc_attribute_collection_handle_action(sc_action_handle))
 
       @examples = []
       sc_transaction_example_collection_handle = RedSnow::Binding.sc_transaction_example_collection_handle(sc_action_handle)
@@ -323,6 +350,7 @@ module RedSnow
     attr_accessor :uri_template
     attr_accessor :model
     attr_accessor :parameters
+    attr_accessor :attributes
     attr_accessor :actions
 
     # @param sc_resource_handle [FFI::Pointer]
@@ -335,6 +363,7 @@ module RedSnow
       @model = Payload.new(sc_payload_handle_resource)
 
       @parameters = Parameters.new(RedSnow::Binding.sc_parameter_collection_handle_resource(sc_resource_handle))
+      @attributes = Attributes.new(RedSnow::Binding.sc_attribute_collection_handle_resource(sc_resource_handle))
 
       @actions = []
       sc_action_collection_handle = RedSnow::Binding.sc_action_collection_handle(sc_resource_handle)
