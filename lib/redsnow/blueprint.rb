@@ -209,6 +209,7 @@ module RedSnow
   class Payload < NamedBlueprintNode
     attr_accessor :headers
     attr_accessor :body
+    attr_accessor :parameters
     attr_accessor :schema
     attr_accessor :reference
 
@@ -218,6 +219,8 @@ module RedSnow
       @description = RedSnow::Binding.sc_payload_description(sc_payload_handle_resource)
       @body = RedSnow::Binding.sc_payload_body(sc_payload_handle_resource)
       @schema = RedSnow::Binding.sc_payload_schema(sc_payload_handle_resource)
+
+      @parameters = Parameters.new(RedSnow::Binding.sc_parameter_collection_handle_payload(sc_payload_handle_resource))
 
       sc_reference_handle_payload = RedSnow::Binding.sc_reference_handle_payload(sc_payload_handle_resource)
       sc_reference_id = RedSnow::Binding.sc_reference_id(sc_reference_handle_payload)
