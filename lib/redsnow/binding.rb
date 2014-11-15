@@ -73,7 +73,9 @@ module RedSnow
     # @see https://github.com/apiaryio/snowcrash/blob/master/src/Blueprint.h#L85
     enum :parameter_use, [:undefined,
                           :optional,
-                          :required
+                          :required,
+                          :readonly,
+                          :writeonly
                          ]
 
     attach_function('sc_parameter_handle', 'sc_parameter_handle', [:pointer, :int], :pointer)
