@@ -204,7 +204,7 @@ module RedSnow
   class Attributes < BlueprintNode
     attr_accessor :collection
 
-    # @param sc_parameter_collection_handle [FFI::Pointer]
+    # @param sc_attribute_collection_handle [FFI::Pointer]
     def initialize(sc_attribute_collection_handle)
       sc_attribute_collection_size = RedSnow::Binding.sc_attribute_collection_size(sc_attribute_collection_handle)
       @collection = []
@@ -215,6 +215,29 @@ module RedSnow
 
       (0..parameters_size).each do |index|
         sc_parameter_handle = RedSnow::Binding.sc_parameter_handle(sc_attribute_collection_handle, index)
+        @collection << Parameter.new(sc_parameter_handle)
+      end
+    end
+  end
+
+  # Collection of data structure members Blueprint AST node
+  #   represents 'members section'
+  #
+  # @attr collection [Array<Parameter>] an array of body attributes
+  class Members < BlueprintNode
+    attr_accessor :collection
+
+    # @param sc_members_collection_handle [FFI::Pointer]
+    def initialize(sc_members_collection_handle)
+      sc_members_collection_size = RedSnow::Binding.sc_members_collection_size(sc_members_collection_handle)
+      @collection = []
+
+      return if sc_members_collection_size == 0
+
+      parameters_size = sc_members_collection_size - 1
+
+      (0..parameters_size).each do |index|
+        sc_parameter_handle = RedSnow::Binding.sc_parameter_handle(sc_members_collection_handle, index)
         @collection << Parameter.new(sc_parameter_handle)
       end
     end
@@ -407,6 +430,55 @@ module RedSnow
     end
   end
 
+  class DataStructure < NamedBlueprintNode
+    attr_accessor :members
+    attr_accessor :sample
+
+    def initialize(sc_data_structure_handle)
+      @name = RedSnow::Binding.sc_data_structure_name(sc_data_structure_handle)
+      @description = RedSnow::Binding.sc_data_structure_description(sc_data_structure_handle)
+
+      members_from(sc_data_structure_handle)
+      sample_from(sc_data_structure_handle)
+    end
+
+  private
+    def members_from(handle)
+      @members = Members.new(RedSnow::Binding.sc_members_collection_handle(handle))
+    end
+
+    def sample_from(handle)
+      @sample = Payload.new(RedSnow::Binding.sc_sample_handle(handle))
+    end
+  end
+
+  class DataStructures < BlueprintNode
+    attr_accessor :description
+    attr_accessor :data_structures
+
+    def initialize(sc_data_structures_handle)
+      @description = RedSnow::Binding.sc_data_structures_description(sc_data_structures_handle)
+
+      data_structures_from(sc_data_structures_handle)
+    end
+
+  private
+    def data_structures_from(handle)
+      sc_data_structure_collection_handle = RedSnow::Binding.sc_data_structure_collection_handle(blueprint_handle)
+      sc_data_structure_collection_size = RedSnow::Binding.sc_data_structure_collection_size(sc_data_structure_collection_handle)
+      @data_structures = []
+
+      return if sc_data_structure_collection_size == 0
+
+      collection_size = sc_data_structure_collection_size - 1
+
+      (0..collection_size).each do |index|
+        sc_data_structure_handle = RedSnow::Binding.sc_data_structure_handle(sc_data_structure_collection_handle, index)
+        @data_structures << DataStructure.new(sc_data_structure_handle)
+      end
+    end
+  end
+
   # Top-level Blueprint AST node
   #   represents 'blueprint section'
   #
@@ -415,6 +487,7 @@ module RedSnow
   class Blueprint < NamedBlueprintNode
     attr_accessor :metadata
     attr_accessor :resource_groups
+    attr_accessor :data_structures
 
     # Version key
     VERSION_KEY = :_version
@@ -433,7 +506,20 @@ module RedSnow
       @metadata = Metadata.new(sc_metadata_collection_handle)
 
       # BP Resource Groups
-      sc_resource_group_collection_handle = RedSnow::Binding.sc_resource_group_collection_handle(handle)
+      resource_groups_from handle
+
+      # BP Data Structures
+      data_structures_from handle
+    end
+
+  private
+    def data_structures_from(blueprint_handle)
+      sc_data_structures_handle = RedSnow::Binding.sc_data_structures_handle(blueprint_handle)
+      @data_structures = DataStructures.new(sc_data_structures_handle)
+    end
+
+    def resource_groups_from(blueprint_handle)
+      sc_resource_group_collection_handle = RedSnow::Binding.sc_resource_group_collection_handle(blueprint_handle)
       sc_resource_group_collection_size = RedSnow::Binding.sc_resource_group_collection_size(sc_resource_group_collection_handle)
       @resource_groups = []
 
