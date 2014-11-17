@@ -1,5 +1,6 @@
 require '_helper'
 require 'unindent'
+
 # RedSnowParsingTest
 class RedSnowParsingTest < Test::Unit::TestCase
   # https://github.com/apiaryio/protagonist/blob/master/test/parser-test.coffee
@@ -27,6 +28,53 @@ class RedSnowParsingTest < Test::Unit::TestCase
       should 'have description' do
         assert_equal '', @result.ast.name
         assert_equal "**description**\n", @result.ast.description
+      end
+    end
+
+    context 'DataStructures' do
+      setup do
+        source = <<-STR
+        # Data Structures
+        _description_
+
+        ## Structure Name
+        Structure Description
+
+        + Members
+          + name = `default_value`
+
+        + Sample
+
+            name=value
+
+        STR
+
+        @result = RedSnow.parse(source.unindent)
+        @data_structures = @result.ast.data_structures
+        puts @data_structures.inspect
+        @name_struct = @data_structures.data_structures[0]
+      end
+
+      should 'have description' do 
+        assert_equal "_description_\n\n", @data_structures.description
+      end
+
+      should 'have one struct' do
+        assert_equal 1, @data_structures.data_structures.count
+      end
+
+      should 'have named struct with description' do
+        assert_equal "Name", @name_struct.name
+        assert_equal "Structure Description\n\n", @name_struct.description
+      end
+
+      should 'have named struct with members' do 
+        assert_equal "name", @name_struct.members.collection[0].name
+        assert_equal "default_value", @name_struct.members.collection[0].default_value
+      end
+
+      should 'have named struct with sample' do
+        assert_equal "name=value\n", @name_struct.sample.body
       end
     end
 
