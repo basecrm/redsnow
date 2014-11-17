@@ -133,6 +133,50 @@ module RedSnow
       end
     end
 
+    # Attributes source map collection node
+    #
+    # @attr collection [Array<Parameter>] an array of body attributes
+    class Attributes < Node
+      attr_accessor :collection
+
+      # @param sc_sm_attribute_collection_handle [FFI::Pointer]
+      def initialize(sc_sm_attribute_collection_handle)
+        sc_sm_attribute_collection_size = RedSnow::Binding.sc_sm_attribute_collection_size(sc_sm_attribute_collection_handle)
+        @collection = []
+
+        return if sc_sm_attribute_collection_size == 0
+
+        parameters_size = sc_sm_attribute_collection_size - 1
+
+        (0..parameters_size).each do |index|
+          sc_sm_parameter_handle = RedSnow::Binding.sc_sm_parameter_handle(sc_sm_attribute_collection_handle, index)
+          @collection << Parameter.new(sc_sm_parameter_handle)
+        end
+      end
+    end
+
+    # Members source map collection node
+    #
+    # @attr collection [Array<Parameter>] an array of data structure members
+    class Members < Node
+      attr_accessor :collection
+
+      # @param sc_sm_members_collection_handle [FFI::Pointer]
+      def initialize(sc_sm_members_collection_handle)
+        sc_sm_members_collection_size = RedSnow::Binding.sc_sm_members_collection_size(sc_sm_members_collection_handle)
+        @collection = []
+
+        return if sc_sm_members_collection_size == 0
+
+        parameters_size = sc_sm_members_collection_size - 1
+
+        (0..parameters_size).each do |index|
+          sc_sm_parameter_handle = RedSnow::Binding.sc_sm_parameter_handle(sc_sm_members_collection_handle, index)
+          @collection << Parameter.new(sc_sm_parameter_handle)
+        end
+      end
+    end
+
     # Payload source map node
     #
     # @abstract
@@ -144,6 +188,8 @@ module RedSnow
     class Payload < NamedNode
       attr_accessor :headers
       attr_accessor :body
+      attr_accessor :parameters
+      attr_accessor :attributes
       attr_accessor :schema
       attr_accessor :reference
 
@@ -153,6 +199,9 @@ module RedSnow
         @description = SourceMap.new(RedSnow::Binding.sc_sm_payload_description(sc_sm_payload_handle_resource))
         @body = SourceMap.new(RedSnow::Binding.sc_sm_payload_body(sc_sm_payload_handle_resource))
         @schema = SourceMap.new(RedSnow::Binding.sc_sm_payload_schema(sc_sm_payload_handle_resource))
+
+        @parameters = Parameters.new(RedSnow::Binding.sc_sm_parameter_collection_handle_payload(sc_sm_payload_handle_resource))
+        @attributes = Attributes.new(RedSnow::Binding.sc_sm_attribute_collection_handle_payload(sc_sm_payload_handle_resource))
 
         # Handle to reference source map
         sc_sm_reference_handle = RedSnow::Binding.sc_sm_reference_handle(sc_sm_payload_handle_resource)
@@ -219,6 +268,7 @@ module RedSnow
     class Action < NamedNode
       attr_accessor :method
       attr_accessor :parameters
+      attr_accessor :attributes
       attr_accessor :examples
 
       # @param sc_sm_action_handle [FFI::Pointer]
@@ -229,6 +279,7 @@ module RedSnow
         @method = SourceMap.new(RedSnow::Binding.sc_sm_action_httpmethod(sc_sm_action_handle))
 
         @parameters = Parameters.new(RedSnow::Binding.sc_sm_parameter_collection_handle_action(sc_sm_action_handle))
+        @attributes = Attributes.new(RedSnow::Binding.sc_sm_attribute_collection_handle_action(sc_sm_action_handle))
 
         @examples = []
         sc_sm_transaction_example_collection_handle = RedSnow::Binding.sc_sm_transaction_example_collection_handle(sc_sm_action_handle)
@@ -255,6 +306,7 @@ module RedSnow
       attr_accessor :uri_template
       attr_accessor :model
       attr_accessor :parameters
+      attr_accessor :attributes
       attr_accessor :actions
 
       # @param sc_sm_resource_handle [FFI::Pointer]
@@ -271,6 +323,7 @@ module RedSnow
         sc_sm_action_collection_size = RedSnow::Binding.sc_sm_action_collection_size(sc_sm_action_collection_handle)
 
         @parameters = Parameters.new(RedSnow::Binding.sc_sm_parameter_collection_handle_resource(sc_sm_resource_handle))
+        @attributes = Attributes.new(RedSnow::Binding.sc_sm_attribute_collection_handle_resource(sc_sm_resource_handle))
 
         return if sc_sm_action_collection_size == 0
 
@@ -309,13 +362,64 @@ module RedSnow
       end
     end
 
+    class DataStructure < NamedNode
+      attr_accessor :members
+      attr_accessor :sample
+
+      def intialize(sc_sm_data_structure_handle)
+        @name = RedSnow::Binding.sc_sm_data_structure_name(sc_sm_data_structure_handle)
+        @description = RedSnow::Binding.sc_sm_data_structure_description(sc_sm_data_structure_handle)
+
+        members_from(sc_sm_data_structure_handle)
+        sample_from(sc_sm_data_structure_handle)
+      end
+
+    private
+      def members_from(handle)
+        @members = Members.new(RedSnow::Binding.sc_sm_members_collection_handle(handle))
+      end
+
+      def sample_from(handle)
+        @sample = Payload.new(RedSnow::Binding.sc_sm_sample_handle(handle))
+      end
+    end
+
+    class DataStructures < Node
+      attr_accessor :description
+      attr_accessor :data_structures
+
+      def initialize(sc_sm_data_structures_handle)
+        @description = RedSnow::Binding.sc_sm_data_structures_description(sc_sm_data_structures_handle)
+
+        data_structures_from(sc_sm_data_structures_handle)
+      end
+
+    private
+      def data_structures_from(handle)
+        sc_sm_data_structure_collection_handle = RedSnow::Binding.sc_sm_data_structure_collection_handle(handle)
+        sc_sm_data_structure_collection_size = RedSnow::Binding.sc_sm_data_structure_collection_size(handle)
+        @data_structures = []
+
+        return if sc_sm_data_structure_collection_size == 0
+
+        collection_size = sc_sm_data_structure_collection_size - 1
+
+        (0..collection_size).each do |index|
+          sc_sm_data_structure_handle = RedSnow::Binding.sc_sm_data_structure_handle(sc_sm_data_structure_collection_handle, index)
+          @data_structures << DataStructure.new(sc_sm_data_structure_handle)
+        end
+      end
+    end
+
     # Blueprint source map node
     #
     # @attr metadata [Metadata] tool-specific metadata collection or nil
-    # @attr resource_groups [Array<ResourceGroup>] array of resource groups
+    # @attr resource_groups [Array<ResourceGroup>] array of resource groups
+    # @attr data_structures [DataStructures] data structures or nil
     class Blueprint < NamedNode
       attr_accessor :metadata
       attr_accessor :resource_groups
+      attr_accessor :data_structures
 
       # @param handle [FFI:Pointer]
       def initialize(handle)
@@ -328,6 +432,19 @@ module RedSnow
         @metadata = Metadata.new(sc_sm_metadata_collection_handle)
 
         # BP Resource Groups
+        resource_groups_from(handle)
+
+        # BP Data Structures
+        data_structures_from(handle)
+      end
+
+    private 
+      def data_structures_from(handle)
+        sc_sm_data_structures_handle = RedSnow::Binding.sc_sm_data_structures_handle(handle)
+        @data_structures = DataStructures.new(sc_sm_data_structures_handle)
+      end
+
+      def resource_groups_from(handle)
         sc_sm_resource_group_collection_handle = RedSnow::Binding.sc_sm_resource_group_collection_handle(handle)
         sc_sm_resource_group_collection_size = RedSnow::Binding.sc_sm_resource_group_collection_size(sc_sm_resource_group_collection_handle)
         @resource_groups = []
