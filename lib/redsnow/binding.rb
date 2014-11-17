@@ -30,6 +30,17 @@ module RedSnow
     attach_function('sc_metadata_key', 'sc_metadata_key', [:pointer], :string)
     attach_function('sc_metadata_value', 'sc_metadata_value', [:pointer], :string)
 
+    attach_funtion('sc_data_structures_handle', 'sc_data_structures_handle', [:pointer], :pointer)
+    attach_funtion('sc_data_structures_description', 'sc_data_structures_description', [:pointer], :string)
+    attach_funtion('sc_data_structure_collection_handle', 'sc_data_structure_collection_handle', [:pointer], :pointer) 
+    attach_funtion('sc_data_structure_collection_size', 'sc_data_structure_collection_size', [:pointer], :int)
+    attach_funtion('sc_data_structure_handle', 'sc_data_structure_handle', [:pointer, :int], :pointer)
+    attach_funtion('sc_data_structure_name', 'sc_data_structure_name', [:pointer], :string)
+    attach_funtion('sc_data_structure_description', 'sc_data_structure_description', [:pointer], :string)
+    attach_funtion('sc_members_collection_handle', 'sc_members_collection_handle', [:pointer], :pointer) 
+    attach_funtion('sc_members_collection_size', 'sc_members_collection_size', [:pointer], :int) 
+    attach_funtion('sc_sample_handle', 'sc_sample_handle', [:pointer], :pointer)
+
     attach_function('sc_resource_group_collection_handle', 'sc_resource_group_collection_handle', [:pointer], :pointer)
     attach_function('sc_resource_group_collection_size', 'sc_resource_group_collection_size', [:pointer], :int)
 
@@ -149,6 +160,17 @@ module RedSnow
 
     attach_function('sc_sm_metadata_handle', 'sc_sm_metadata_handle', [:pointer, :int], :pointer)
     attach_function('sc_sm_metadata', 'sc_sm_metadata', [:pointer], :pointer)
+
+    attach_function('sc_sm_data_structures_handle', 'sc_sm_data_structures_handle', [:pointer], :pointer)
+    attach_function('sc_sm_data_structures_description', 'sc_sm_data_structures_description', [:pointer], :pointer)
+    attach_function('sc_sm_data_structure_collection_handle', 'sc_sm_data_structure_collection_handle', [:pointer], :pointer)
+    attach_function('sc_sm_data_structure_collection_size', 'sc_sm_data_structure_collection_size', [:pointer], :int)
+    attach_function('sc_sm_data_structure_handle', 'sc_sm_data_structure_handle', [:pointer, :int], :pointer)
+    attach_function('sc_sm_data_structure_name', 'sc_sm_data_structure_name', [:pointer], :pointer)
+    attach_function('sc_sm_data_structure_description', 'sc_sm_data_structure_description', [:pointer], :pointer)
+    attach_function('sc_sm_members_collection_handle', 'sc_sm_members_collection_handle', [:pointer], :pointer)
+    attach_function('sc_sm_members_collection_size', 'sc_sm_members_collection_size', [:pointer], :int)
+    attach_function('sc_sm_sample_handle', 'sc_sm_sample_handle', [:pointer], :pointer)
 
     attach_function('sc_sm_resource_group_collection_handle', 'sc_sm_resource_group_collection_handle', [:pointer], :pointer)
     attach_function('sc_sm_resource_group_collection_size', 'sc_sm_resource_group_collection_size', [:pointer], :int)
