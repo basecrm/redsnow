@@ -464,7 +464,7 @@ module RedSnow
 
   private
     def data_structures_from(handle)
-      sc_data_structure_collection_handle = RedSnow::Binding.sc_data_structure_collection_handle(blueprint_handle)
+      sc_data_structure_collection_handle = RedSnow::Binding.sc_data_structure_collection_handle(handle)
       sc_data_structure_collection_size = RedSnow::Binding.sc_data_structure_collection_size(sc_data_structure_collection_handle)
       @data_structures = []
 
